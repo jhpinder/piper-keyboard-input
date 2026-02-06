@@ -31,8 +31,10 @@ Pistons need not be byte-aligned.
 ### PCB Inputs
 
 64-pin columns, each with their own shift register chain:
-- Chain 1: Bottom Manual (61 notes + 3 padding)
-- Chain 2: Middle Manual (61 notes + 3 padding)
-- Chain 3: Top Manual (61 notes + 3 padding)
-- Chain 4: Pedalboard + Pedal pistons (32 notes + 24 pistons + 8 extra inputs)
-- Chain 5: Manual pistons + extra inputs (61 pistons + 3 extra inputs)
+- Column 1: Bottom Manual (61 notes + 3 padding)
+- Column 2: Middle Manual (61 notes + 3 padding)
+- Column 3: Top Manual (61 notes + 3 padding)
+- Column 4: Pedalboard + Pedal pistons (32 notes + 24 pistons + 8 extra inputs)
+- Column 5: Manual pistons + extra inputs (61 pistons + 3 extra inputs)
+
+### 
