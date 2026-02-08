@@ -36,5 +36,8 @@ Pistons need not be byte-aligned.
 - Column 3: Top Manual (61 notes + 3 padding)
 - Column 4: Pedalboard + Pedal pistons (32 notes + 24 pistons + 8 extra inputs)
 - Column 5: Manual pistons + extra inputs (61 pistons + 3 extra inputs)
+- Columns 6-8: Reserved for future expansion or additional controls
 
-### 
+### Usage of SPI
+
+The 74HC165 shift registers will be connected in series for each column, allowing us to read all inputs using a single SPI interface. The microcontroller will use the SPI protocol to clock in the data from the shift registers, which will then be processed to determine the state of each input.

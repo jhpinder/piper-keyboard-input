@@ -3,11 +3,17 @@
 uint8_t PiperHardware::dipStates = 0;
 uint32_t* PiperHardware::prevInputStates = new uint32_t[NUM_32_BIT_BUFFERS]();
 uint32_t* PiperHardware::currInputStates = new uint32_t[NUM_32_BIT_BUFFERS]();
+int PiperHardware::dmaChannel = -1;
+repeating_timer_t PiperHardware::inputTimer;
+volatile bool PiperHardware::dmaInProgress = false;
 
 void PiperHardware::initialize() {
   initDips();
   initRS485();
-  initShiftRegisters();
+  initNeoPixel();
+  initSPI();
+  initDMA();
+  startInputPolling();
 }
 
 void PiperHardware::initDips() {
@@ -32,16 +38,62 @@ void PiperHardware::initRS485() {
   Serial1.begin(RS485_BAUDRATE);
 }
 
-void PiperHardware::initShiftRegisters() {
-  pinMode(PIN_DATA, INPUT);
-  pinMode(PIN_CLOCK, OUTPUT);
-  pinMode(PIN_LATCH, OUTPUT);
-  digitalWrite(PIN_CLOCK, LOW);
-  digitalWrite(PIN_LATCH, LOW);
+void PiperHardware::initSPI() {
+  SPI.setSCK(SPI_SCK_PIN);
+  SPI.setRX(SPI_RX_PIN);
+  SPI.begin();
+  spi_set_baudrate(spi0, SPI_BAUDRATE);
+
+  // Use GPIO functions for fast access in ISR
+  gpio_init(PIN_PL);
+  gpio_set_dir(PIN_PL, GPIO_OUT);
+  gpio_put(PIN_PL, 1);  // Start HIGH
 }
 
-void PiperHardware::readShiftRegisters(uint8_t* buffer, size_t length) {
-  /// TODO: Implement PIO/DMA for more efficient reading
+void PiperHardware::initDMA() {
+  dmaChannel = dma_claim_unused_channel(true);
+  dma_channel_config c = dma_channel_get_default_config(dmaChannel);
+  channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+  channel_config_set_read_increment(&c, false);   // Read from single SPI FIFO
+  channel_config_set_write_increment(&c, true);   // Write to sequential buffer
+  channel_config_set_dreq(&c, spi_get_dreq(spi0, false));
+  dma_channel_configure(dmaChannel, &c, PiperHardware::currInputStates, &spi_get_hw(spi0)->dr, SHIFT_REGISTER_COUNT,
+                        false);
+}
+
+void PiperHardware::startInputPolling() {
+  // Start 1ms repeating timer (-1 = delay before first call)
+  add_repeating_timer_ms(-READ_INTERVAL, timerCallback, NULL, &inputTimer);
+}
+
+bool PiperHardware::timerCallback(repeating_timer_t* rt) {
+  // Safety check: skip if previous DMA still running
+  if (dmaInProgress && dma_channel_is_busy(dmaChannel)) {
+    return true;  // Continue timer
+  }
+
+  // Pulse PIN_PL to latch 74HC165 inputs (LOW then HIGH)
+  gpio_put(PIN_PL, 0);
+  busy_wait_us_32(1);  // 1μs pulse width
+  gpio_put(PIN_PL, 1);
+
+  // Start DMA transfer to read 64 bytes from SPI
+  dmaInProgress = true;
+  dma_channel_set_write_addr(dmaChannel, currInputStates, true);
+
+  return true;  // Continue timer
+}
+
+void PiperHardware::updateInputStates() {
+  // Check if DMA transfer is complete
+  if (dmaInProgress && !dma_channel_is_busy(dmaChannel)) {
+    dmaInProgress = false;
+
+    // Swap buffer pointers (zero-copy)
+    uint32_t* temp = prevInputStates;
+    prevInputStates = currInputStates;
+    currInputStates = temp;
+  }
 }
 
 uint8_t PiperHardware::getPiperMidiChannelFromDips() { return (dipStates & MIDI_CH_MASK); }

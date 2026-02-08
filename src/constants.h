@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <piper-midi.h>
 
 /// TODO: Update pin numbers
 const uint8_t DIP_PINS[8] = {2, 3, 4, 5, 6, 7, 8, 9};
@@ -25,14 +26,16 @@ const uint8_t OCTAVE_LUT[16] = {36, 36, 36, 36, 24, 36, 12, 0, 36, 36, 36, 36, 4
 /// TODO: Update pin number
 #define RS485_DE_PIN 10
 
-// Shift register pins
-/// TODO: Update pin numbers
-/// TODO: use PIO/DMA
-#define PIN_DATA 11
-#define PIN_CLOCK 12
-#define PIN_LATCH 13
+// SPI constants
+#define PIN_PL 17
+#define SPI_SCK_PIN 18
+#define SPI_RX_PIN 16
+#define SPI_BAUDRATE 2000000
+#define READ_INTERVAL 1
 
 // Shift register constants
+#define POINTS_PER_COLUMN 64
+#define NUM_COLUMNS 8
 #define SHIFT_REGISTER_COUNT 64
 #define SHIFT_REGISTER_SIZE 8
 #define NUM_INPUTS (SHIFT_REGISTER_COUNT * SHIFT_REGISTER_SIZE)
