@@ -1,7 +1,7 @@
 #include "constants.h"
 #include "hardware/dma.h"
-#include "hardware/spi.h"
 #include "hardware/gpio.h"
+#include "hardware/spi.h"
 #include <SPI.h>
 #include <pico/time.h>
 
@@ -14,7 +14,7 @@ public:
   static void initSPI();
   static void initDMA();
 
-  static void updateInputStates();
+  static bool updateInputStates();
   static void startInputPolling();
   static uint8_t getPiperMidiChannelFromDips();
   static uint8_t getOctaveFromDips();

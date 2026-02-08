@@ -47,15 +47,15 @@ void PiperHardware::initSPI() {
   // Use GPIO functions for fast access in ISR
   gpio_init(PIN_PL);
   gpio_set_dir(PIN_PL, GPIO_OUT);
-  gpio_put(PIN_PL, 1);  // Start HIGH
+  gpio_put(PIN_PL, 1); // Start HIGH
 }
 
 void PiperHardware::initDMA() {
   dmaChannel = dma_claim_unused_channel(true);
   dma_channel_config c = dma_channel_get_default_config(dmaChannel);
   channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-  channel_config_set_read_increment(&c, false);   // Read from single SPI FIFO
-  channel_config_set_write_increment(&c, true);   // Write to sequential buffer
+  channel_config_set_read_increment(&c, false); // Read from single SPI FIFO
+  channel_config_set_write_increment(&c, true); // Write to sequential buffer
   channel_config_set_dreq(&c, spi_get_dreq(spi0, false));
   dma_channel_configure(dmaChannel, &c, PiperHardware::currInputStates, &spi_get_hw(spi0)->dr, SHIFT_REGISTER_COUNT,
                         false);
@@ -69,22 +69,22 @@ void PiperHardware::startInputPolling() {
 bool PiperHardware::timerCallback(repeating_timer_t* rt) {
   // Safety check: skip if previous DMA still running
   if (dmaInProgress && dma_channel_is_busy(dmaChannel)) {
-    return true;  // Continue timer
+    return true; // Continue timer
   }
 
   // Pulse PIN_PL to latch 74HC165 inputs (LOW then HIGH)
   gpio_put(PIN_PL, 0);
-  busy_wait_us_32(1);  // 1μs pulse width
+  busy_wait_us_32(1); // 1μs pulse width
   gpio_put(PIN_PL, 1);
 
   // Start DMA transfer to read 64 bytes from SPI
   dmaInProgress = true;
   dma_channel_set_write_addr(dmaChannel, currInputStates, true);
 
-  return true;  // Continue timer
+  return true; // Continue timer
 }
 
-void PiperHardware::updateInputStates() {
+bool PiperHardware::updateInputStates() {
   // Check if DMA transfer is complete
   if (dmaInProgress && !dma_channel_is_busy(dmaChannel)) {
     dmaInProgress = false;
@@ -93,7 +93,9 @@ void PiperHardware::updateInputStates() {
     uint32_t* temp = prevInputStates;
     prevInputStates = currInputStates;
     currInputStates = temp;
+    return true; // new data available
   }
+  return false; // no new data
 }
 
 uint8_t PiperHardware::getPiperMidiChannelFromDips() { return (dipStates & MIDI_CH_MASK); }

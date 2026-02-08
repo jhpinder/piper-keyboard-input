@@ -8,7 +8,7 @@
 - Manual pistons: Total 61 pistons
     - Top manual: 15 pistons
     - Middle manual: 20 pistons
-    - Bottom manual: 26 pistons
+    - Bottom manual: 26 pistons including set piston, which needs to be a note on off instead of a piston press message
 
 Total used inputs: 300 (61 * 3 + 32 + 24 + 61)<br>
 Total inputs with padding to byte boundaries: 320 (40 shift registers of 8 bits each)
@@ -31,12 +31,13 @@ Pistons need not be byte-aligned.
 ### PCB Inputs
 
 64-pin columns, each with their own shift register chain:
-- Column 1: Bottom Manual (61 notes + 3 padding)
+- Column 1: Bottom Manual (61 notes + set piston + 2 padding)
 - Column 2: Middle Manual (61 notes + 3 padding)
 - Column 3: Top Manual (61 notes + 3 padding)
-- Column 4: Pedalboard + Pedal pistons (32 notes + 24 pistons + 8 extra inputs)
-- Column 5: Manual pistons + extra inputs (61 pistons + 3 extra inputs)
-- Columns 6-8: Reserved for future expansion or additional controls
+- Column 4: Pedalboard (32 notes + 32 extra inputs)
+- Column 5: Manual non-setter pistons + extra piston inputs (60 non-setter pistons + 5 extra piston inputs)
+- Column 6: Pedal pistons (24 pistons + 40 extra piston inputs)
+- Columns 7-8: Reserved for future expansion or additional controls
 
 ### Usage of SPI
 

@@ -1,8 +1,12 @@
 #include "PiperHardware.h"
+#include "PiperMidiMap.h"
 
 class PiperMidiProcessor {
 
 public:
-  static uint8_t getPiperMidiNoteForInput(uint8_t inputNumber);
+  static void processInputChanges();
   static void sendPiperMidiMessages();
+
+  static PiperMidi::PiperMidiMessage* messageBuffer[NUM_INPUTS];
+  static uint16_t numMessagesInBuffer;
 };

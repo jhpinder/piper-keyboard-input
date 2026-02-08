@@ -1,3 +1,6 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
 #include <Arduino.h>
 #include <piper-midi.h>
 
@@ -48,3 +51,5 @@ constexpr uint8_t NUM_32_BIT_BUFFERS((NUM_INPUTS + 31) / 32);
 // NeoPixel constants
 #define NEOPIXEL_PIN 14
 #define NEOPIXEL_COUNT 1
+
+#endif
