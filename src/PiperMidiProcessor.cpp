@@ -1,8 +1,10 @@
 #include "PiperMidiProcessor.h"
 
 // initialize static members of PiperMidiProcessor
+// won't ever have more than NUM_INPUTS messages in buffer at once
 PiperMidi::PiperMidiMessage* PiperMidiProcessor::messageBuffer[NUM_INPUTS];
-uint16_t PiperMidiProcessor::numMessagesInBuffer = 0;
+// use uint16_t for message count since max is 512
+int PiperMidiProcessor::numMessagesInBuffer = 0;
 
 void PiperMidiProcessor::processInputChanges() {
   // detect changes in input states using XOR and populate messageBuffer

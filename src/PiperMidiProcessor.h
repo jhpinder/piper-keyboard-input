@@ -8,5 +8,5 @@ public:
   static void sendPiperMidiMessages();
 
   static PiperMidi::PiperMidiMessage* messageBuffer[NUM_INPUTS];
-  static uint16_t numMessagesInBuffer;
+  static int numMessagesInBuffer;
 };
